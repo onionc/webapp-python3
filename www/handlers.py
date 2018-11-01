@@ -184,12 +184,10 @@ async def api_blogs(*, page=1):
     """ 文章列表 api """
     page_index = Glo.get_page_index(page)
     num = await Blog.findNumber('count(id)')
-    print([page_index, num])
     p = Page(num, page_index)
     if num == 0:
         return dict(page=p, blogs=())
     blogs = await Blog.findAll(orderBy='created_at desc', limit=(p.offset, p.limit))
-    print(blogs)
     return dict(page=p, blogs=blogs)
 
 
