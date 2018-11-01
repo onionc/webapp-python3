@@ -1,0 +1,22 @@
+/* head */
+.nav a:link{
+    text-decoration: none;
+}
+
+/* main */
+.main{
+    margin: 10px 50px;    
+}
+
+textarea{
+    width:100%;
+}
+
+/* footer */
+.footer{
+    font-size: 12px;
+    color: rgb(200,200,250);
+    position: fixed;
+    bottom: 0;
+    right: 0;
+}
