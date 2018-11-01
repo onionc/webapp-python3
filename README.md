@@ -1,5 +1,12 @@
 
-> 通过廖雪峰博客Python文章实践的一个小博客
+> 通过廖雪峰博客Python文章实践的一个小博客，感谢廖大:)
+
+```
+www/config/env.bak -> env.py 配置文件
+www/db/table.sql 默认数据表
+log/ 日志文件
+......
+```
 
 ### todo list    
 - [x] 完善添加大日志错误（next_id打成了next_id()），编辑日志错误（此处日志指文章）
