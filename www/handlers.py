@@ -2,8 +2,6 @@
 
 """ url handlers """
 
-import re
-import time
 import json
 import logging
 import asyncio
@@ -62,7 +60,7 @@ async def authenticate(*, email, passwd):
     if len(users) == 0:
         raise APIValueError('email', 'Email not exist.')
     user = users[0]
-    
+
     # check password
     uid_passwd = '{}:{}'.format(user.id, passwd)
     if user.passwd != hashlib.sha1(uid_passwd.encode('utf-8')).hexdigest():
@@ -121,7 +119,7 @@ async def get_blog(id):
     comments = await Comment.findAll('id=?', [id], orderBy='created_at desc')
     for c in comments:
         c.html_content = Glo.text2html(c.content)
-    blog.html_content = mistune.markdown(blog.content)
+    blog.html_content = mistune.markdown(blog.content, escape=False)
     return {
         '__template__': 'blog.html',
         'blog': blog,
@@ -223,4 +221,3 @@ async def manage_blogs(*, page=1):
         '__template__': 'manage_blogs.html',
         'page_index': Glo.get_page_index(page)
     }
-
