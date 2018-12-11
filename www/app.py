@@ -1,3 +1,4 @@
+# conding:utf-8
 #! /usr/bin/python
 
 import functions as Glo
@@ -138,10 +139,11 @@ async def init(loop):
     add_routes(app, 'handlers')
     add_static(app)
     try:
-        srv = await loop.create_server(app.make_handler(), '10.139.128.25', 80)
+        srv = await loop.create_server(app.make_handler(), CONF['host'], CONF['port'])
     except Exception as e:
         logger.error(e)
-    logger.info('server started at http://127.0.0.1:80')
+    
+    logger.info(f"server started at http://{CONF['host']}:{CONF['port']}")
     return srv
 
 loop = asyncio.get_event_loop()

@@ -5,7 +5,7 @@
 
 /* main */
 .main{
-    margin: 10px 50px;
+    margin: 10px auto;
     width: 980px;
 }
 
@@ -20,4 +20,23 @@ textarea{
     position: fixed;
     bottom: 0;
     right: 0;
+}
+
+/* scale page */
+body_scale
+{
+transform:scale(0.9,0.9);
+transform-origin:left top;
+-ms-transform:scale(0.9,0.9); 	/* IE 9 */
+-ms-transform-origin:left top; 		/* IE 9 */
+-moz-transform:scale(0.9,0.9); 	/* Firefox */
+-moz-transform-origin:left top;		/* Firefox */
+-webkit-transform:scale(0.9,0.9) ; /* Safari 和 Chrome */
+-webkit-transform-origin:left top;	/* Safari 和 Chrome */
+-o-transform:scale(0.9,0.9); 	/* Opera */
+-o-transform-origin:left top;		/* Opera */
+}
+
+body{
+    zoom: 0.85
 }

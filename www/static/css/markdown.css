@@ -12,7 +12,7 @@ img {
 }
 @media screen and (min-width: 1000px) {
     body {
-        /*width: 842px;*/
+        width: 960px;
         margin: 10px auto;
     }
 
@@ -20,7 +20,7 @@ img {
 }
 h1, h2, h3, h4 {
     color: #111111;
-    font-weight: 400;
+    font-weight: 600;
     margin-top: 1em;
 }
 
