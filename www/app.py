@@ -74,6 +74,12 @@ async def response_factory(app, handler):
             if r.startswith('redirect:'):
                 """ 重定向链接 """
                 return web.HTTPFound(r[9:])
+            # 字符串还可用直接返回，用于wx验证
+            resp = web.Response(body=r.encode('utf-8'))
+            logger.debug("r=%s" % r)
+            resp.content_type = 'text/html;charset=utf-8'
+            return resp
+
         if isinstance(r, dict):
             template = r.get('__template__')
             if template is None:
