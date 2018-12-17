@@ -1,10 +1,13 @@
 #!/usr/bin/python
 
-import time, uuid
+import time
+import uuid
 from orm import Model, StringField, BooleanField, IntegerField, FloatField, TextField
+
 
 def next_id():
     return "{0:0<15d}{1}000".format(int(time.time() * 1000), uuid.uuid4().hex.upper())
+
 
 class User(Model):
     """ 用户表 """
@@ -22,7 +25,7 @@ class User(Model):
 class Blog(Model):
     """ 博客表 """
     __table__ = 'blogs'
-   
+
     id = StringField(primary_key=True, default=next_id)
     user_id = StringField(ddl='varchar(64)')
     name = StringField()
@@ -33,7 +36,7 @@ class Blog(Model):
 
 class Comment(Model):
     __table__ = 'comments'
-    
+
     id = StringField(primary_key=True, default=next_id)
     user_id = StringField(ddl='varchar(64)')
     title = StringField('varchar(128)')
