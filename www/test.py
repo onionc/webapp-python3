@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # coding:utf-8
-import wechat.CacheFunc as x
+import wechat.cacheFunc as x
 
 
 def test_token():

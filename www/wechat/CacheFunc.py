@@ -17,7 +17,11 @@ def access_token_cache():
         logger.debug("[wechat] access_token: {} {}".format(urlResp, postUrl))
         return urlResp['access_token']
     except Exception:
-        logger.warning("[wechat] access_token error: {} {}".format(urlResp, postUrl))
+        logger.warning("[wechat] access_token error: {} {}".format(
+                urlResp,
+                postUrl
+            )
+        )
         return ''
 
 

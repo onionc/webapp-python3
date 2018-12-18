@@ -18,7 +18,8 @@ CONF = {
     'wechat': {
         'token': 'xxxx',  # 微信服务器验证token
         'appid': 'xxxx',
-        'secret': 'xxxx'
+        'secret': 'xxxx',
+        'access_token_key': 'access_token'
     },
     'url': {
     }

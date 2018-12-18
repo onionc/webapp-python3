@@ -16,6 +16,7 @@ from apis import Page, APIError, APIValueError
 import functions as Glo
 from functions import logger
 from config.env import CONF
+from wechat.handle import MsgHandle
 
 
 @get('/')
@@ -288,3 +289,16 @@ async def wx(**data):
             return ""
     except Exception as Argument:
         return Argument
+
+
+@post('wechat/wx')
+async def wechat_message_handle(**data):
+    """ 消息处理 """
+    logger.info("[wechat] route, message info: %s " % data)
+    try:
+        msg_handle = MsgHandle(data)
+        reply = msg_handle.run()
+        return reply if reply else 'success'
+    except Exception as e:
+        logger.debug('[wechat] route: error. %s ' % str(e))
+        return 'success'
