@@ -30,6 +30,4 @@ log/*
 
 # config
 ## web/config/env.py
-env.py
-log.conf
-/www/config/
+/www/config/*

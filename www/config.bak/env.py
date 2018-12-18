@@ -19,9 +19,11 @@ CONF = {
         'token': 'xxxx',  # 微信服务器验证token
         'appid': 'xxxx',
         'secret': 'xxxx'
+    },
+    'url': {
     }
 
 }
 
 # 获取access token url
-CONF['wechat']['access_token_url'] = f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={CONF['wechat']['appid']}&secret={CONF['wechat']['appid']}"
+CONF['url']['access_token_url'] = f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={CONF['wechat']['appid']}&secret={CONF['wechat']['secret']}"
