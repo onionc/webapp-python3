@@ -32,3 +32,4 @@ log/*
 ## web/config/env.py
 env.py
 log.conf
+/www/config/
