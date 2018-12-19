@@ -12,7 +12,7 @@ class MsgHandle(object):
         self.data = self._parse_xml(xml_data)
         logger.info('[wechat] receive msg_data :%s' % str(self.data))
         # 消息类型
-        self.type = self.data.find('FromUserName').text
+        self.type = self.data.find('MsgType').text
         # 转换为消息对象
         self.msg_obj = self._to_msg()
 

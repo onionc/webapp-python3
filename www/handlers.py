@@ -291,10 +291,10 @@ async def wx(**data):
         return Argument
 
 
-@post('wechat/wx')
-async def wechat_message_handle(**data):
+@post('/wechat/wx')
+async def wechat_message_handle(data):
     """ 消息处理 """
-    logger.info("[wechat] route, message info: %s " % data)
+    logger.info("[wechat] route, message info: {} ".format(data))
     try:
         msg_handle = MsgHandle(data)
         reply = msg_handle.run()
