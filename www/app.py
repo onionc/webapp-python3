@@ -1,11 +1,5 @@
+# !/usr/bin/python
 # conding:utf-8
-#! /usr/bin/python
-
-import functions as Glo
-# 开启异常捕获
-Glo.exception_set(True)
-#Glo.exception_set(False)
-
 import asyncio
 import os
 import json
@@ -19,19 +13,26 @@ from webFrame import add_routes, add_static
 from functions import logger
 from config.env import CONF
 
+import functions as Glo
+# 开启异常捕获
+Glo.exception_set(True)
+
+
 def init_jinja2(app, **kw):
     logger.debug('init jinja2...')
     options = dict(
-        autoescape = kw.get('autoescape', True),
-        block_start_string = kw.get('block_start_string', '{%'),
-        block_end_string = kw.get('block_end_string', '%}'),
-        variable_start_string = kw.get('variable_start_string', '{{'),
-        variable_end_string = kw.get('variable_end_string', '}}'),
-        auto_reload = kw.get('auto_reload', True)
+        autoescape=kw.get('autoescape', True),
+        block_start_string=kw.get('block_start_string', '{%'),
+        block_end_string=kw.get('block_end_string', '%}'),
+        variable_start_string=kw.get('variable_start_string', '{{'),
+        variable_end_string=kw.get('variable_end_string', '}}'),
+        auto_reload=kw.get('auto_reload', True)
     )
     path = kw.get('path', None)
     if path is None:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+        path = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)),
+            'templates')
     logger.debug('set jinja2 template path: {}'.format(path))
     env = Environment(loader=FileSystemLoader(path), **options)
     filters = kw.get('filters', None)
@@ -40,11 +41,13 @@ def init_jinja2(app, **kw):
             env.filters[name] = f
     app['__templating__'] = env
 
+
 async def logger_factory(app, handler):
     async def loggerx(request):
         logger.debug('Request:{} {}'.format(request.method, request.path))
         return (await handler(request))
     return loggerx
+
 
 async def data_factory(app, handler):
     async def parse_data(request):
@@ -52,7 +55,8 @@ async def data_factory(app, handler):
             if request.content_type.startswitch('application/json'):
                 request.__data__ = await request.json()
                 logger.debug('request json:{}'.format(request.__data__))
-            elif request.content_type.startswith('application/x-www-form-urlencode'):
+            elif request.content_type.startswith(
+                    'application/x-www-form-urlencode'):
                 request.__data__ = await request.post()
                 logger.debug('request post:{}'.format(request.__data__))
         return (await handler(request))
@@ -83,7 +87,12 @@ async def response_factory(app, handler):
         if isinstance(r, dict):
             template = r.get('__template__')
             if template is None:
-                resp = web.Response(body=json.dumps(r, ensure_ascii=False, default=lambda o:o.__dict__).encode('utf-8'))
+                resp = web.Response(
+                        body=json.dumps(
+                            r,
+                            ensure_ascii=False,
+                            default=lambda o: o.__dict__).encode('utf-8')
+                    )
                 resp.content_type = 'application/json;charset=utf-8'
                 return resp
             else:
@@ -97,11 +106,12 @@ async def response_factory(app, handler):
             t, m = r
             if isinstance(t, int) and (100 <= r < 600):
                 return web.Response(t, str(m))
-        #default
+        # default
         resp = web.Response(body=str(r).encode('utf-8'))
         resp.content_type = 'text/plain;charset=utf-8'
         return resp
     return response
+
 
 async def auth_factory(app, handler):
     """ 权限工厂，解析cookie,将用户绑定到request对象 """
@@ -114,10 +124,12 @@ async def auth_factory(app, handler):
             if user:
                 logger.debug('set current user: {0}'.format(user.email)) 
                 request.__user__ = user
-        if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
+        if (request.path.startswith('/manage/') and
+                (request.__user__ is None or not request.__user__.admin)):
             return web.HTTPFound('/signin')
         return (await handler(request))
-    return auth   
+    return auth
+
 
 def datetime_filter(t):
     """ datetime 过滤器 """
@@ -132,27 +144,36 @@ def datetime_filter(t):
         return u'{}天前'.format(delta // 86400)
     dt = datetime.fromtimestamp(t)
     return u'{0}年{1}月{2}日'.format(dt.year, dt.month, dt.day)
-        
+
 
 async def init(loop):
-    await orm.create_pool(loop=loop, host=CONF['db']['host'], port=CONF['db']['port'], user=CONF['db']['user'], password=CONF['db']['password'], db=CONF['db']['dbName'])
+    await orm.create_pool(
+        loop=loop,
+        host=CONF['db']['host'],
+        port=CONF['db']['port'],
+        user=CONF['db']['user'],
+        password=CONF['db']['password'],
+        db=CONF['db']['dbName']
+    )
 
     app = web.Application(loop=loop, middlewares=[
         logger_factory, auth_factory, response_factory
     ])
-    
+
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers')
     add_static(app)
     try:
-        srv = await loop.create_server(app.make_handler(), CONF['host'], CONF['port'])
+        srv = await loop.create_server(
+            app.make_handler(),
+            CONF['host'],
+            CONF['port'])
     except Exception as e:
         logger.error(e)
-    
+
     logger.info(f"server started at http://{CONF['host']}:{CONF['port']}")
     return srv
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(init(loop))
 loop.run_forever()
-

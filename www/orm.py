@@ -1,32 +1,33 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
-
-__origin_author__ = 'Michael Liao'
-import pdb
-import asyncio
+# import pdb
+# import asyncio
 import aiomysql
 import datetime
 from functions import logger
 
+
 def log(sql, args=()):
     logger.info('{0}\n\tsql: {1}\n\t args: {2}\n'.format(datetime.datetime.now(), sql, args))
+
 
 async def create_pool(loop, **kw):
     """ 创建连接池 """
     logger.info('create database connection pool...')
     global __pool
     __pool = await aiomysql.create_pool(
-        host = kw.get('host', 'localhost'),
-        port = kw.get('post', 3306),
-        user = kw['user'],
-        password = kw['password'],
-        db = kw['db'],
-        charset = kw.get('charset', 'utf8'),
-        autocommit = kw.get('autocommit', True),
-        maxsize = kw.get('maxsize', 10),
-        minsize = kw.get('minsize', 1),
-        loop = loop
+        host=kw.get('host', 'localhost'),
+        port=kw.get('post', 3306),
+        user=kw['user'],
+        password=kw['password'],
+        db=kw['db'],
+        charset=kw.get('charset', 'utf8'),
+        autocommit=kw.get('autocommit', True),
+        maxsize=kw.get('maxsize', 10),
+        minsize=kw.get('minsize', 1),
+        loop=loop
     )
+
 
 async def select(sql, args, size=None):
     """ 查询 """
@@ -41,6 +42,7 @@ async def select(sql, args, size=None):
                 rs = await cur.fetchall()
         logger.debug('rows returned: {}'.format(len(rs)))
         return rs
+
 
 async def execute(sql, args, autocommit=True):
     """ 执行SQL :param autocommit-自动提交，不自动提交则使用事务 """
@@ -59,8 +61,9 @@ async def execute(sql, args, autocommit=True):
         except BaseException as e:
             if not autocommit:
                 await conn.rollback()
-            raise
+            raise e
         return affected
+
 
 def create_args_string(num):
     """ 创建参数字符串 """
@@ -68,7 +71,7 @@ def create_args_string(num):
     for n in range(num):
         L.append('?')
     return ','.join(L)
-            
+
 
 class Field(object):
     """ 字段类，保存字段名和字段类型 """
@@ -80,28 +83,42 @@ class Field(object):
 
     def __str__(self):
         """ 字段描述 """
-        return "<{0}, {1}:{2}>".format(self.__class__.__name__, self.column_type, self.name)
+        return "<{0}, {1}:{2}>".format(
+            self.__class__.__name__,
+            self.column_type,
+            self.name
+        )
 
 
 class StringField(Field):
     """ 字符串类型 """
-    def __init__(self, name=None, primary_key=False, default=None, ddl='varchar(100)'):
+    def __init__(
+        self,
+        name=None,
+        primary_key=False,
+        default=None,
+        ddl='varchar(100)'
+    ):
         super().__init__(name, ddl, primary_key, default)
+
 
 class BooleanField(Field):
     """ 布尔类型 """
     def __init__(self, name=None, default=False):
         super().__init__(name, 'boolean', False, default)
 
+
 class IntegerField(Field):
     """ 整数类型 """
     def __init__(self, name=None, primary_key=False, default=0):
         super().__init__(name, 'bigint', primary_key, default)
 
+
 class FloatField(Field):
     """ 浮点类型 """
     def __init__(self, name=None, primary_key=False, default=0.0):
         super().__init__(name, 'real', primary_key, default)
+
 
 class TextField(Field):
     """ 文本类型 """
@@ -120,13 +137,13 @@ class ModelMetaClass(type):
         # get table name
         tableName = attrs.get('__table__', None) or name
         logger.debug('found model:{0} (table: {1})'.format(name,tableName))
-        
+
         # 找到所有的字段和主键
         mappings = {}
         fields = []
         primaryKey = None
-        for k,v in attrs.items():
-            logger.debug('found mapping: {0}=>{1}'.format(k,v))
+        for k, v in attrs.items():
+            logger.debug('found mapping: {0}=>{1}'.format(k, v))
             if isinstance(v, Field):
                 mappings[k] = v
                 if v.primary_key:
@@ -135,23 +152,23 @@ class ModelMetaClass(type):
                         raise BaseException('Duplicate primary key for field:{}'.format(k))
                     primaryKey = k 
                 else:
-                    fields.append(k) # 非主键字段
+                    fields.append(k)  # 非主键字段
         logger.debug("fields:{0}, pk{1}".format(str(fields), primaryKey))
         if not primaryKey:
             raise BaseException('Primary key not found.')
         for k in mappings.keys():
             attrs.pop(k)
-        escaped_fields = list(map(lambda f: "`{}`".format(f), fields)) # 非主键字段加``
-        attrs['__mappings__'] = mappings # save field and column mapping
+        escaped_fields = list(map(lambda f: "`{}`".format(f), fields))  # 非主键字段加``
+        attrs['__mappings__'] = mappings  # save field and column mapping
         attrs['__table__'] = tableName
         attrs['__primary_key__'] = primaryKey
-        attrs['__fields__'] = fields # 除主键外的属性名
+        attrs['__fields__'] = fields  # 除主键外的属性名
         # 构造默认 select, insert, update and delete 语句
         attrs['__select__'] = "SELECT `{0}`, {1} FROM `{2}`".format(primaryKey, ','.join(escaped_fields), tableName)
         attrs['__insert__'] = "INSERT INTO `{0}` ({1}, `{2}`) VALUES ({3})".format(tableName, ','.join(escaped_fields), primaryKey, create_args_string(len(escaped_fields) + 1))
         attrs['__update__'] = "UPDATE `{0}` SET {1} WHERE `{2}`=?".format(tableName, ','.join(map(lambda f: "`{}`=?".format(mappings.get(f).name or f), fields)), primaryKey)
         attrs['__delete__'] = "DELETE FROM `{0}` where `{1}`=?".format(tableName, primaryKey)
-        
+
         return type.__new__(cls, name, bases, attrs)
 
 
@@ -208,7 +225,7 @@ class Model(dict, metaclass=ModelMetaClass):
             if isinstance(limit, int):
                 sql.append('?')
                 args.append(limit)
-            elif isinstance(limit, tuple) and len(limit)==2 :
+            elif isinstance(limit, tuple) and len(limit) == 2 :
                 sql.append('?,?')
                 args.extend(limit)
             else:
@@ -245,7 +262,7 @@ class Model(dict, metaclass=ModelMetaClass):
         logger.debug(" insert args:{}".format(args))
         if rows != 1:
             logger.info('failed to insert record : affected rows:{}'.format(rows))
-       
+
     async def update(self):
         """ 更新 """ 
         args = list(map(self.getValue, self.__fields__))
@@ -254,7 +271,7 @@ class Model(dict, metaclass=ModelMetaClass):
         logger.debug(" update args:{}, sql:{}".format(args, self.__update__))
         if rows != 1:
             logger.info('failed to update by primary key: affected rows:{}'.format(rows))
-    
+
     async def remove(self):
         """ 删除 """
         args = [self.getValue(self.__primary_key__)]
