@@ -271,7 +271,7 @@ async def wx(**data):
         timestamp = data['timestamp']
         nonce = data['nonce']
         echostr = data['echostr']
-        token = CONF['wechat']['token']  # 请按照公众平台官网\基本配置中信息填写
+        token = CONF['wechat']['token']
 
         # 计算签名
         list_temp = [token, timestamp, nonce]

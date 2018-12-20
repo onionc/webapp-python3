@@ -19,9 +19,7 @@ class MsgHandle(object):
     def run(self):
         """ 消息处理，返回结果 """
         # 处理相应的消息
-        self.msg_obj.handle()
-        # 回复消息
-        return self.msg_obj.reply()
+        return self.msg_obj.handle()
 
     def _parse_xml(self, xml_data):
         """ 解析xml """
@@ -30,7 +28,7 @@ class MsgHandle(object):
         return ET.fromstring(xml_data)
 
     def _to_msg(self):
-        """ 转换消息 """
+        """ 转换消息类型，返回消息对象 """
         if self.type == 'text':
             msg_obj = TextMsg(self.data)
         elif self.type == 'image':
@@ -55,11 +53,19 @@ class Msg(object):
         self.MsgType = data.find('MsgType').text
         self.MsgId = data.find('MsgId').text
 
-    def handle(self):
-        """ 处理消息 """
-        pass
+        self.msg_data = {}
 
-    def reply(self):
+    def handle(self):
+        """ 处理消息，基础构造：收发人以及时间 """
+        self.msg_data['ToUserName'] = self.FromUserName
+        self.msg_data['FromUserName'] = self.ToUserName
+        self.msg_data['CreateTime'] = int(time.time())
+
+        if type(self) is Msg:
+            return self.reply()
+
+    @staticmethod
+    def reply(**data):
         """ 回复消息 """
         return "success"
 
@@ -68,27 +74,26 @@ class TextMsg(Msg):
     """ 文本消息 """
     def __init__(self, data):
         super().__init__(data)
-        self.Content = data.find('Content').text.encode('utf-8')
+        self.Content = data.find('Content').text
 
     def handle(self):
-        self.msg_data = {}
-        self.msg_data['ToUserName'] = self.FromUserName
-        self.msg_data['FromUserName'] = self.ToUserName
-        self.msg_data['CreateTime'] = int(time.time())
+        super().handle()
         self.msg_data['Content'] = self.ai(self.Content)
+        return self.reply(self.msg_data)
 
-    def reply(self):
+    @staticmethod
+    def reply(msg_data):
         xml_form = """
-        <xml>
-        <ToUserName><![CDATA[{ToUserName}]]></ToUserName>
-        <FromUserName><![CDATA[{FromUserName}]]></FromUserName>
-        <CreateTime>{CreateTime}</CreateTime>
-        <MsgType><![CDATA[text]]></MsgType>
-        <Content><![CDATA[{Content}]]></Content>
-        </xml>
+            <xml>
+            <ToUserName><![CDATA[{ToUserName}]]></ToUserName>
+            <FromUserName><![CDATA[{FromUserName}]]></FromUserName>
+            <CreateTime>{CreateTime}</CreateTime>
+            <MsgType><![CDATA[text]]></MsgType>
+            <Content><![CDATA[{Content}]]></Content>
+            </xml>
         """
         logger.info('[wechat] reply msg_data: %s' % str(xml_form))
-        return xml_form.format(**self.msg_data)
+        return xml_form.format(**msg_data)
 
     def ai(self, content):
         return content.split(',')[-1].split('，')[-1].replace('吗', "").replace('?', '!').replace('？', '!')
@@ -100,6 +105,14 @@ class ImageMsg(Msg):
         super().__init__(data)
         self.PicUrl = data.find('PicUrl').text
         self.MediaId = data.find('MediaId').text
+
+    def handle(self):
+        pass
+
+    @staticmethod
+    def reply(**data):
+        """ 回复消息 """
+        return "success"
 
 
 class VoiceMsg(Msg):
@@ -114,8 +127,13 @@ class VoiceMsg(Msg):
         except Exception:
             self.Recognition = None
 
-    def handle(self):
+    def handle(self, data):
         pass
+
+    @staticmethod
+    def reply(**data):
+        """ 回复消息 """
+        return "success"
 
 
 class LinkMsg(Msg):
@@ -125,3 +143,11 @@ class LinkMsg(Msg):
         self.Title = data.find('Title').text
         self.Description = data.find('Description').text
         self.Url = data.find('Url').text
+
+    def handle(self, data):
+            pass
+
+    @staticmethod
+    def reply(**data):
+        """ 回复消息 """
+        return "success"

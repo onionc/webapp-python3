@@ -171,7 +171,7 @@ class RequestHandler(object):
             # stream request
             stream_data = await request.read()
             if stream_data:
-                logger.info("xxxxxxxxxxxx{}".format(stream_data.decode('utf-8')))
+                logger.info("stream request: {}".format(stream_data.decode('utf-8')))
                 kw['data'] = stream_data.decode('utf-8')
 
         logger.info('call with args:{0}'.format(str(kw)))
